@@ -5,7 +5,7 @@ static char bar[] = "======================================="
 int main() {
     int i;
     for (i = 77; i >= 0; i--) {
-        printf("[%s]\r", &bar[i]);
+        printf("[%78s]\r", &bar[i]);
         fflush(stdout);
         sleep(1);
     }
