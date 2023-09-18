@@ -4,7 +4,8 @@ int main(){
   string s;
   cin >> s;
   int count=0;
-  for(int i=0; i<=s.length()-4; i++){
+  int n = s.length();
+  for(int i=0; i<=n-4; i++){
     string temp = s.substr(i, 4);
     //cout<<i<<"_"<<temp<<" ";
     map<char, int>m;
