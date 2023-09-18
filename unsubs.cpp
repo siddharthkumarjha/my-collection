@@ -1,12 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 int main(){
-  int len;
   string s;
-  cin >> len;
   cin >> s;
   int count=0;
-  for(int i=0; i<=len-4; i++){
+  for(int i=0; i<=s.length()-4; i++){
     string temp = s.substr(i, 4);
     //cout<<i<<"_"<<temp<<" ";
     map<char, int>m;
