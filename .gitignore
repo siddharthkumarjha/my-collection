@@ -34,3 +34,4 @@ relative/path/to/dir/anotherfile
 gcm.cache
 *.hex
 *.bin
+build
