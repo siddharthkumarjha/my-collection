@@ -42,6 +42,7 @@ Description:
 */
 
 #include "2d-grid.hpp"
+#include <iostream>
 
 void move(
     std::map<std::pair<int, int>, int> &pos,
@@ -49,16 +50,32 @@ void move(
     std::pair<int, int> newCord
     )
 {
-    auto refItr = pos.find(newCord);
-    if(refItr == pos.end())
+    std::printf("DBG: oldCord: [%d, %d] | newCord: [%d, %d]\n", oldCord.first, oldCord.second, newCord.first, newCord.second);
+    
+    auto newCordItr = pos.find(newCord);
+    auto oldCordItr = pos.find(oldCord);
+
+    if(newCordItr == pos.end())
     {
-        pos[newCord] = pos.at(oldCord);
+        pos[newCord] = oldCordItr->second;
+        oldCordItr->second = -1;
     }
     else
     {
         move(pos, newCord, std::make_pair(newCord.first + 1, newCord.second));
-        refItr->second = pos.at(oldCord);
+        newCordItr->second = oldCordItr->second;
+        oldCordItr->second = -1;
+
+        for(auto &[key, value] : pos)
+        {
+            if(key.second == oldCord.second && oldCord.first < key.first && value > -1)
+            {
+                pos[std::make_pair(key.first - 1, key.second)] = value;
+                value = -1;
+            }
+        }
     }
+
 }
 
 std::vector<int> solution(
@@ -67,6 +84,9 @@ std::vector<int> solution(
     int &query
     )
 {
+    std::vector<int> ans;
+    ans.reserve(2);
+
     std::map<std::pair<int, int>, int> pos;
     for(const auto &cRef : cards)
     {
@@ -79,7 +99,32 @@ std::vector<int> solution(
         std::pair<int, int> oldCord = std::make_pair(mRef[1], mRef[2]);
         std::pair<int, int> newCord = std::make_pair(mRef[3], mRef[4]);
 
+        std::printf("Pos Map:\n");
         move(pos, oldCord, newCord);
+
+        for(const auto &[key, value] : pos)
+            std::printf("x: %d y: %d | %d\n", key.first, key.second, value);
     }
-    return std::vector<int>({1, 3});
+
+    std::printf("Cards: [CardID, x, y]\n");
+    for(const auto &cRef : cards)
+    {
+        std::printf("[%d, %d, %d], ", cRef[0], cRef[1], cRef[2]);
+    }
+    std::printf("\nMoves: [CardID, Xold, Yold, Xnew, Ynew]\n");
+    for(const auto &mRef : moves)
+    {
+        std::printf("[%d, %d, %d, %d, %d] ", mRef[0], mRef[1], mRef[2], mRef[3], mRef[4]);
+    }
+    std::printf("\nquery: %d\n", query);
+
+    for(const auto &[key, value] : pos)
+    {
+        if(value == query)
+        {
+            ans.push_back(key.first);
+            ans.push_back(key.second);
+        }
+    }
+    return ans;
 }

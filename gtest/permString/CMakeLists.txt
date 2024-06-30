@@ -4,7 +4,7 @@ project(my_project)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # GoogleTest requires at least C++14
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(GTest)
 
@@ -12,8 +12,8 @@ enable_testing()
 
 add_executable(
   ${PROJECT_NAME}
-  2d-grid_test.cc
-  2d-grid.cpp
+  permString_test.cc
+  permString.cpp
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ./)
 target_link_libraries(
