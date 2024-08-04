@@ -60,6 +60,8 @@ static inline void vec_realloc(Vector *vec, size_t elemSiz, size_t capacity) {
 
 [[gnu::always_inline]]
 static inline void *vec_expand(void *data, size_t elemSiz) {
+  assert(elemSiz < UINT32_MAX / 100);
+
   Vector header = nullptr;
   if (data == nullptr) {
     header = ((Vector)vec_new(elemSiz, 8)) - 1;
@@ -89,33 +91,67 @@ static inline void *vec_expand(void *data, size_t elemSiz) {
     vec_ = nullptr;                                                            \
   }
 
+#define vec_back(vec_) (vec_[vec_size(vec_) - 1])
+#define vec_front(vec_) (vec_[0])
+#define vec_empty(vec_) (vec_size(vec_) == 0)
+#define vec_max_size UINT64_MAX
+
+#define vec_reserve(vec_, cap_)                                                \
+  {                                                                            \
+    if (vec_ == nullptr)                                                       \
+      vec_ = (typeof(vec_))vec_new(sizeof(*(vec_)), (cap_));                   \
+    else {                                                                     \
+      Vector _tmp_ = ((Vector)vec_) - 1;                                       \
+      vec_realloc(&_tmp_, sizeof(*(vec_)), cap_);                              \
+    }                                                                          \
+  }
+
+#define vec_insert_at(vec_, pos_, data_)                                       \
+  {                                                                            \
+    if (pos_ >= 0U) {                                                          \
+      void *_tmp_ = vec_expand((vec_), sizeof(*(vec_)));                       \
+      (vec_) = (typeof(vec_))(_tmp_);                                          \
+      size_t bkIdx = vec_size(vec_) - 1;                                       \
+      for (; bkIdx > pos_; bkIdx--) {                                          \
+        (vec_)[bkIdx] = (vec_)[bkIdx - 1];                                     \
+      }                                                                        \
+      (vec_)[pos_] = data_;                                                    \
+    }                                                                          \
+  }
+
 int main(void) {
   // Create a vector
-  int *vec = nullptr;
+  double *vec = nullptr;
+  vec_reserve(vec, 22);
 
   // store data in vector
   for (size_t i = 0; i < 10; ++i) {
-    vec_push_back(vec, i);
+    vec_push_back(vec, i * 0.05);
   }
 
   // print it
-  uint32_t size = vec_size(vec);
+  size_t size = vec_size(vec);
   for (size_t i = 0; i < size; ++i) {
-    printf("Value at index %zu: %d\n", i, vec[i]);
+    printf("Value at index %zu: %f\n", i, vec[i]);
   }
-  printf("Vector size: %u\n", size);
+  printf("Vector size: %zu\n", size);
 
   for (size_t i = 9; i < 20; ++i) {
     vec_push_back(vec, i);
   }
 
+  vec_insert_at(vec, 10, -100.0008);
   size = vec_size(vec);
   for (size_t i = 0; i < size; ++i) {
-    printf("Value at index %zu: %d\n", i, vec[i]);
+    printf("Value at index %zu: %f\n", i, vec[i]);
   }
 
-  printf("Vector size: %u\n", size);
+  vec_insert_at(vec, 0, -10.8);
+
+  printf("Vector size: %zu\n", vec_size(vec));
   printf("Vector capacity: %zu\n", vec_cap(vec));
+  printf("with first %f and last %f elements respectively\n", vec_front(vec),
+         vec_back(vec));
 
   // dealloc vec! manage your memory :)
   vec_dealloc(vec);
