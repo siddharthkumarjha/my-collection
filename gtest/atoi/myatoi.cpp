@@ -1,4 +1,5 @@
 #include "myatoi.hpp"
+#include <cstdint>
 
 int myAtoi(string s) {
   size_t n = s.size();
@@ -52,6 +53,6 @@ int myAtoi(string s) {
   else if (posSign)
     return INT_MAX;
   else if (!posSign && !overflow && res < max__)
-    return static_cast<int32_t>((-1 * res));
+    return static_cast<int32_t>((UINT32_MAX * res));
   return INT_MIN;
 }

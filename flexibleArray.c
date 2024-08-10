@@ -12,24 +12,22 @@ typedef struct {
 
 typedef VHeader *Vector;
 
-[[gnu::always_inline]]
-static inline size_t vec_size(const void *data) {
+__attribute__((always_inline)) static inline size_t vec_size(const void *data) {
   if (data == nullptr)
     return 0;
   const Vector header = (Vector)data;
   return header[-1].size;
 }
 
-[[gnu::always_inline]]
-static inline size_t vec_cap(const void *data) {
+__attribute__((always_inline)) static inline size_t vec_cap(const void *data) {
   if (data == nullptr)
     return 0U;
   const Vector header = (Vector)data;
   return header[-1].capacity;
 }
 
-[[gnu::always_inline]]
-static inline void *vec_new(size_t elemSiz, size_t capacity) {
+__attribute__((always_inline)) static inline void *vec_new(size_t elemSiz,
+                                                           size_t capacity) {
   assert(capacity < UINT64_MAX);
   assert(elemSiz < UINT32_MAX / 100);
 
@@ -39,8 +37,8 @@ static inline void *vec_new(size_t elemSiz, size_t capacity) {
   return &(header[1]);
 }
 
-[[gnu::always_inline]]
-static inline void vec_realloc(Vector *vec, size_t elemSiz, size_t capacity) {
+__attribute__((always_inline)) static inline void
+vec_realloc(Vector *vec, size_t elemSiz, size_t capacity) {
   assert(capacity < UINT64_MAX);
   assert(elemSiz < UINT32_MAX / 100);
 
@@ -58,8 +56,8 @@ static inline void vec_realloc(Vector *vec, size_t elemSiz, size_t capacity) {
   }
 }
 
-[[gnu::always_inline]]
-static inline void *vec_expand(void *data, size_t elemSiz) {
+__attribute__((always_inline)) static inline void *vec_expand(void *data,
+                                                              size_t elemSiz) {
   assert(elemSiz < UINT32_MAX / 100);
 
   Vector header = nullptr;
