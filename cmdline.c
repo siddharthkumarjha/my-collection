@@ -18,7 +18,7 @@ int main() {
 
     // Calculate loading bar width based on terminal size (e.g., 70% of terminal
     // width)
-    bar_width = w.ws_col * 70 / 100;
+    bar_width = w.ws_col * 60 / 100;
 
     // Make sure the bar_width is not greater than the size of the bar array
     if (bar_width > sizeof(bar) - 1) {
