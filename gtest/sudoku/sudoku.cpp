@@ -24,7 +24,7 @@ bool isValidSudoku(vector<vector<char>> &board) {
     for (const auto &chr : chrarr) {
       std::printf("%c, ", chr);
     }
-    std::printf("\033[2D ]\n");
+    std::printf("\b\b ]\n");
   }
 
   std::printf("=======================================\n");
