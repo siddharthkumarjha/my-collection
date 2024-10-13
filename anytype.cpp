@@ -1,6 +1,8 @@
 #include <cstdint>
+#include <cxxabi.h>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -58,6 +60,19 @@ there's no "returning" the callable to be done anywhere
 the visitor is the callable
 */
 
+template <typename T> std::shared_ptr<char> demangle(void) {
+  std::shared_ptr<char> name{
+      abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, nullptr),
+      std::free};
+  return name;
+}
+
+template <typename T>
+[[gnu::always_inline]]
+inline std::shared_ptr<char> demangle(T &&) {
+  return demangle<T>();
+}
+
 template <typename T> struct is_string {
   static constexpr bool value = false;
 };
@@ -68,18 +83,20 @@ struct is_string<std::basic_string<char, Traits, Alloc>> {
 };
 
 template <typename T> constexpr bool is_string_like() {
-  using expr = std::decay_t<std::__remove_cvref_t<T>>;
+  using expr = std::__remove_cvref_t<std::remove_pointer_t<std::decay_t<T>>>;
 
-  if constexpr (std::is_same_v<expr, char *>)
+  if constexpr (std::is_same_v<expr, char>)
     return true;
   return false;
 }
+
+template <typename T> constexpr bool is_string_like_v = is_string_like<T>();
 
 template <typename T> constexpr bool is_string_v = is_string<T>::value;
 
 template <typename T>
 concept BasicType =
-    std::is_arithmetic_v<T> || is_string_v<T> || is_string_like<T>();
+    std::is_arithmetic_v<T> || is_string_v<T> || is_string_like_v<T>;
 
 class CommonDataType {
   std::variant<uint64_t, int64_t, double, std::string> m_Data;
@@ -100,6 +117,10 @@ public:
       m_Data = static_cast<uint64_t>(data);
     else if constexpr (std::is_integral_v<T> && std::is_signed_v<T>)
       m_Data = static_cast<int64_t>(data);
+    else if constexpr (is_string_like<T>() &&
+                       std::is_volatile_v<
+                           std::remove_pointer_t<std::decay_t<T>>>)
+      m_Data = const_cast<const char *>(data);
     else
       m_Data = data;
   }
@@ -117,9 +138,17 @@ public:
 
 int main() {
   std::vector<CommonDataType> v = {0, 7L, "String", 8.8, std::string("hi")};
+  volatile char const c[] = "hello";
+
+  using expr = volatile const char *volatile const;
+  std::printf("%s\n%s\n%s\n", demangle<expr>().get(), demangle(c).get(),
+              demangle((c + 0)).get());
+
+  v.emplace_back(c);
 
   for (const auto &ref : v) {
     std::cout << ref;
   }
+
   return 0;
 }
