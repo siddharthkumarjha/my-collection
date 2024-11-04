@@ -91,27 +91,29 @@ template <typename T> constexpr bool is_string_like() {
 }
 
 template <typename T> constexpr bool is_string_like_v = is_string_like<T>();
-
+template <typename T> constexpr bool is_bool_v = std::is_same_v<T, bool>;
 template <typename T> constexpr bool is_string_v = is_string<T>::value;
 
 template <typename T>
-concept BasicType =
-    std::is_arithmetic_v<T> || is_string_v<T> || is_string_like_v<T>;
+concept BasicType = std::is_arithmetic_v<T> || is_string_v<T> ||
+                    is_string_like_v<T> || is_bool_v<T>;
+
+template <class... T> struct overloaded : T... {
+  using T::operator()...;
+};
+template <class... T> overloaded(T...) -> overloaded<T...>;
 
 class CommonDataType {
-  std::variant<uint64_t, int64_t, double, std::string> m_Data;
-
-  template <class... T> struct overloaded : T... {
-    using T::operator()...;
-  };
-  template <class... T> overloaded(T...) -> overloaded<T...>;
+  std::variant<uint64_t, int64_t, double, std::string, bool> m_Data;
 
 public:
   template <BasicType T> CommonDataType(const T &data) { write(data); }
   CommonDataType() : m_Data(static_cast<uint64_t>(0U)){};
 
   template <BasicType T> constexpr void write(const T &data) {
-    if constexpr (std::is_floating_point_v<T>)
+    if constexpr (is_bool_v<T>)
+      m_Data = static_cast<bool>(data);
+    else if constexpr (std::is_floating_point_v<T>)
       m_Data = static_cast<double>(data);
     else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<T>)
       m_Data = static_cast<uint64_t>(data);
@@ -130,6 +132,10 @@ public:
     std::visit(overloaded{[](auto &arg) { std::cout << arg << '\n'; },
                           [](const std::string &arg) {
                             std::cout << std::quoted(arg) << '\n';
+                          },
+                          [](const bool &arg) {
+                            std::cout << std::boolalpha << arg
+                                      << std::noboolalpha << '\n';
                           }},
                data.m_Data);
     return os;
@@ -137,7 +143,8 @@ public:
 };
 
 int main() {
-  std::vector<CommonDataType> v = {0, 7L, "String", 8.8, std::string("hi")};
+  std::vector<CommonDataType> v = {0,   7L, "String", 8.8, std::string("hi"),
+                                   true};
   volatile char const c[] = "hello";
 
   using expr = volatile const char *volatile const;
