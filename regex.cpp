@@ -98,7 +98,7 @@ public:
 
 int main(void) 
 { 
-    std::string lTestCases[] = {"ha", "haha", "hahaha", "hahaaa", "haah", "ah", "h", "haaaaaah"};
+    std::string lTestCases[] = {"ha", "haha", "hahaha", "hahaaa", "haah", "ah", "h", "haahahhaa"};
     for(const auto &lStringToCheck : lTestCases)
     {
         RegexHa lRegex;
